@@ -1,0 +1,15 @@
+/* SettingsPage.css */
+
+h2 {
+    color: #007BFF; /* Customize as needed */
+  }
+  
+  form {
+    margin-top: 20px;
+  }
+  
+  label {
+    display: block;
+    margin-bottom: 10px;
+  }
+  
