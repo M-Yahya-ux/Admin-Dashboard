@@ -15,7 +15,8 @@ const GroupsPage = () => {
   // Add a new group
   const handleAddGroup = () => {
     if (newGroup.name && newGroup.accessPages.length > 0) {
-      setGroups([...groups, { id: Date.now(), name: newGroup.name, accessPages: newGroup.accessPages }]);
+      const newGroupObj = { id: Date.now(), name: newGroup.name, accessPages: newGroup.accessPages };
+      setGroups([...groups, newGroupObj]);
       setNewGroup({ name: '', accessPages: [] }); // Reset the form
     }
   };
@@ -23,12 +24,20 @@ const GroupsPage = () => {
   // Edit an existing group
   const handleEditGroup = (group) => {
     setEditingGroup(group);
+    // Copy the group's data to newGroup for editing
+    setNewGroup({ name: group.name, accessPages: [...group.accessPages] });
   };
 
   const handleUpdateGroup = () => {
-    const updatedGroup = { ...editingGroup };
-    setGroups(groups.map((group) => (group.id === updatedGroup.id ? updatedGroup : group)));
-    setEditingGroup(null);
+    // Update the group with new permissions
+    const updatedGroups = groups.map(group =>
+      group.id === editingGroup.id
+        ? { ...group, name: newGroup.name, accessPages: newGroup.accessPages }
+        : group
+    );
+    setGroups(updatedGroups);
+    setEditingGroup(null); // Exit the editing mode
+    setNewGroup({ name: '', accessPages: [] }); // Reset the form
   };
 
   // Delete a group
@@ -38,17 +47,10 @@ const GroupsPage = () => {
 
   // Handle checkbox change for access pages
   const handleCheckboxChange = (page) => {
-    if (editingGroup) {
-      const updatedAccessPages = editingGroup.accessPages.includes(page)
-        ? editingGroup.accessPages.filter((p) => p !== page)
-        : [...editingGroup.accessPages, page];
-      setEditingGroup({ ...editingGroup, accessPages: updatedAccessPages });
-    } else {
-      const updatedAccessPages = newGroup.accessPages.includes(page)
-        ? newGroup.accessPages.filter((p) => p !== page)
-        : [...newGroup.accessPages, page];
-      setNewGroup({ ...newGroup, accessPages: updatedAccessPages });
-    }
+    const updatedAccessPages = newGroup.accessPages.includes(page)
+      ? newGroup.accessPages.filter((p) => p !== page)
+      : [...newGroup.accessPages, page];
+    setNewGroup({ ...newGroup, accessPages: updatedAccessPages });
   };
 
   return (
@@ -57,13 +59,33 @@ const GroupsPage = () => {
 
       {/* Add Group Form */}
       <div className="add-group-container">
-        <h3>Add New Group</h3>
-        <input
-          type="text"
-          placeholder="Group Name"
-          value={newGroup.name}
-          onChange={(e) => setNewGroup({ ...newGroup, name: e.target.value })}
-        />
+        <h3>{editingGroup ? 'Edit Group' : 'Add New Group'}</h3>
+
+        {/* Dropdown to select a group */}
+        <div>
+          <h4>Select Group to Edit (or leave blank for new group):</h4>
+          <select
+            value={newGroup.name || ''}
+            onChange={(e) => {
+              const selectedGroup = groups.find((group) => group.name === e.target.value);
+              if (selectedGroup) {
+                setNewGroup({ name: selectedGroup.name, accessPages: selectedGroup.accessPages });
+                setEditingGroup(selectedGroup); // If a group is selected, set for editing
+              } else {
+                setNewGroup({ name: '', accessPages: [] });
+                setEditingGroup(null); // Reset if no group is selected
+              }
+            }}
+          >
+            <option value="">-- Select a Group --</option>
+            {groups.map((group) => (
+              <option key={group.id} value={group.name}>
+                {group.name}
+              </option>
+            ))}
+          </select>
+        </div>
+
         <div className="checkbox-group">
           <h4>Select Access Pages:</h4>
           {availablePages.map((page) => (
@@ -77,7 +99,14 @@ const GroupsPage = () => {
             </label>
           ))}
         </div>
-        <button className="btn add-btn" onClick={handleAddGroup}>Add Group</button>
+
+        {/* Add or Update Group Button */}
+        <button
+          className={`btn ${editingGroup ? 'update-btn' : 'add-btn'}`}
+          onClick={editingGroup ? handleUpdateGroup : handleAddGroup}
+        >
+          {editingGroup ? 'Update Group' : 'Add Group'}
+        </button>
       </div>
 
       {/* Group List */}
@@ -89,8 +118,8 @@ const GroupsPage = () => {
                 {/* Editing Group Form */}
                 <input
                   type="text"
-                  value={editingGroup.name}
-                  onChange={(e) => setEditingGroup({ ...editingGroup, name: e.target.value })}
+                  value={newGroup.name}
+                  onChange={(e) => setNewGroup({ ...newGroup, name: e.target.value })}
                 />
                 <div className="checkbox-group">
                   <h4>Select Access Pages:</h4>
@@ -98,7 +127,7 @@ const GroupsPage = () => {
                     <label key={page}>
                       <input
                         type="checkbox"
-                        checked={editingGroup.accessPages.includes(page)}
+                        checked={newGroup.accessPages.includes(page)}
                         onChange={() => handleCheckboxChange(page)}
                       />
                       {page}

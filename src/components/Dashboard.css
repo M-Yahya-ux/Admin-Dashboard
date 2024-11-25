@@ -1,48 +1,140 @@
-/* Dashboard.css */
+/* Sidebar Container */
+.sidebar {
+  width: 250px; /* Fixed width for sidebar */
+  background: linear-gradient(180deg, #007bff, #0056b3); /* Gradient background */
+  color: white;
+  padding: 20px;
+  box-shadow: 4px 0 10px rgba(0, 0, 0, 0.1); /* Slight shadow for depth */
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100vh; /* Full height of the page */
+  transition: all 0.3s ease; /* Smooth transition */
+  z-index: 100;
+}
 
-.dashboard-container {
-    display: flex;
-    height: 100vh; /* Full height */
+/* Sidebar Header */
+.sidebar h2 {
+  margin-top: 0;
+  margin-bottom: 20px; /* Space below the heading */
+  font-size: 1.8rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-weight: 600;
+}
+
+/* Navigation Links */
+.sidebar nav ul {
+  list-style: none;
+  padding: 0;
+  margin-top: 20px;
+}
+
+.sidebar nav ul li {
+  margin: 15px 0; /* Space between links */
+}
+
+/* Individual Link */
+.sidebar nav ul li a {
+  color: white;
+  text-decoration: none;
+  padding: 12px;
+  display: flex; /* Align icon and text */
+  align-items: center; /* Center text and icons */
+  border-radius: 8px; /* Rounded corners */
+  transition: all 0.3s ease; /* Smooth hover transition */
+  font-size: 1rem;
+}
+
+/* Add hover effects for links */
+.sidebar nav ul li a:hover {
+  background-color: rgba(255, 255, 255, 0.2); /* Lighten background */
+  transform: translateX(10px); /* Slight movement on hover */
+  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.2); /* Shadow on hover */
+}
+
+/* Active Link Styling */
+.sidebar nav ul li a.active {
+  background-color: rgba(255, 255, 255, 0.3);
+  color: #ffdd57; /* Highlight active link with a different color */
+  font-weight: bold;
+}
+
+/* Sidebar Icons */
+.sidebar nav ul li a i {
+  margin-right: 10px; /* Space between icon and text */
+  font-size: 1.2rem;
+  transition: color 0.3s ease;
+}
+
+.sidebar nav ul li a:hover i {
+  color: #ffdd57; /* Change icon color on hover */
+}
+
+/* Toggle Button for Collapsing Sidebar */
+.sidebar-toggle {
+  position: absolute;
+  top: 20px;
+  right: -40px; /* Hidden offscreen */
+  background-color: #007bff;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 1.5rem;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  transition: all 0.3s ease;
+  z-index: 101; /* To stay above the sidebar */
+}
+
+/* Hover effect for toggle button */
+.sidebar-toggle:hover {
+  background-color: #0056b3;
+}
+
+/* Content area */
+.content {
+  margin-left: 250px; /* To account for sidebar width */
+  padding: 20px;
+  background-color: #f4f4f9;
+  transition: all 0.3s ease; /* Smooth content transition */
+}
+
+.content.sidebar-collapsed {
+  margin-left: 80px; /* Reduced space when sidebar is collapsed */
+}
+
+/* Collapsed Sidebar Styling */
+.sidebar.collapsed {
+  width: 80px; /* Smaller width when collapsed */
+  padding: 20px 10px;
+}
+
+.sidebar.collapsed h2 {
+  font-size: 1.2rem;
+}
+
+.sidebar.collapsed nav ul li a {
+  padding: 10px;
+  justify-content: center; /* Center the icon */
+}
+
+.sidebar.collapsed nav ul li a i {
+  font-size: 1.5rem; /* Larger icon size when collapsed */
+}
+
+/* Smooth Fade-in Animation for Sidebar */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateX(-100%);
   }
-  
-  .sidebar {
-    width: 250px; /* Fixed width for sidebar */
-    background-color: #007BFF; /* Sidebar background color */
-    color: white;
-    padding: 20px;
-    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+  to {
+    opacity: 1;
+    transform: translateX(0);
   }
-  
-  .sidebar h2 {
-    margin-top: 0;
-    margin-bottom: 20px; /* Space below the heading */
-  }
-  
-  .sidebar nav ul {
-    list-style: none;
-    padding: 0;
-  }
-  
-  .sidebar nav ul li {
-    margin: 15px 0; /* Space between links */
-  }
-  
-  .sidebar nav ul li a {
-    color: white;
-    text-decoration: none;
-    padding: 10px;
-    display: block; /* Make the link fill the list item */
-    border-radius: 4px; /* Rounded corners */
-    transition: background-color 0.3s;
-  }
-  
-  .sidebar nav ul li a:hover {
-    background-color: rgba(255, 255, 255, 0.2); /* Lighten background on hover */
-  }
-  
-  .content {
-    flex-grow: 1; /* Allow content area to grow */
-    padding: 20px;
-    background-color: #f4f4f9; /* Main content background color */
-  }
-  
+}
+
+.sidebar {
+  animation: fadeIn 0.9s ease-out; /* Slide-in effect */
+}

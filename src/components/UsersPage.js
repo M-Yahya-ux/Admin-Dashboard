@@ -1,45 +1,105 @@
-import './UsersPage.css';
 import React, { useState } from 'react';
+import PasswordStrengthBar from 'react-password-strength-bar';
+import './UsersPage.css';
 
 const UsersPage = () => {
-  const [users, setUsers] = useState([
-    { id: 1, name: 'User1', email: 'user1@example.com', group: 'Admin' },
-    { id: 2, name: 'User2', email: 'user2@example.com', group: 'User' },
-  ]);
+  const [users, setUsers] = useState(() => {
+    return JSON.parse(localStorage.getItem('users')) || [];
+  });
 
-  const [newUser, setNewUser] = useState({ name: '', email: '', group: '' });
+  const [newUser, setNewUser] = useState({
+    name: '',
+    email: '',
+    group: '',
+    username: '',  // Add username field
+    password: '',
+    confirmPassword: '',
+  });
+
+  const [groups, setGroups] = useState(() => {
+    return ['Admin', 'User'];
+  });
+
   const [editingUser, setEditingUser] = useState(null);
+  const [error, setError] = useState('');
 
-  // Add a new user
   const handleAddUser = () => {
-    if (newUser.name && newUser.email && newUser.group) {
-      setUsers([...users, { id: Date.now(), ...newUser }]);
-      setNewUser({ name: '', email: '', group: '' }); // Reset the form
+    if (!newUser.name || !newUser.email || !newUser.group || !newUser.username || !newUser.password || !newUser.confirmPassword) {
+      setError('Please fill all fields');
+      return;
+    }
+
+    const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/;
+    if (!emailRegex.test(newUser.email)) {
+      setError('Invalid email format');
+      return;
+    }
+
+    if (newUser.password !== newUser.confirmPassword) {
+      setError('Passwords do not match');
+      return;
+    }
+
+    if (newUser.password.length < 6) {
+      setError('Password must be at least 6 characters');
+      return;
+    }
+
+    setError('');
+
+    const newUserData = { id: Date.now(), ...newUser };
+    const updatedUsers = [...users, newUserData];
+
+    setUsers(updatedUsers);
+    localStorage.setItem('users', JSON.stringify(updatedUsers));
+
+    setNewUser({
+      name: '',
+      email: '',
+      group: '',
+      username: '',  // Clear username as well
+      password: '',
+      confirmPassword: '',
+    });
+
+    if (!groups.includes(newUser.group)) {
+      setGroups([...groups, newUser.group]);
     }
   };
 
-  // Edit an existing user
   const handleEditUser = (user) => {
     setEditingUser(user);
   };
 
   const handleUpdateUser = () => {
-    setUsers(users.map((user) => (user.id === editingUser.id ? editingUser : user)));
+    const updatedUsers = users.map((user) =>
+      user.id === editingUser.id ? editingUser : user
+    );
+    setUsers(updatedUsers);
+    localStorage.setItem('users', JSON.stringify(updatedUsers));
     setEditingUser(null);
   };
 
-  // Delete a user
   const handleDeleteUser = (id) => {
-    setUsers(users.filter((user) => user.id !== id));
+    const updatedUsers = users.filter((user) => user.id !== id);
+    setUsers(updatedUsers);
+    localStorage.setItem('users', JSON.stringify(updatedUsers));
   };
 
   return (
     <div className="users-page-container">
       <h2 className="users-page-title">Users</h2>
 
-      {/* Add User Form */}
+      {error && <div className="error-message">{error}</div>}
+
       <div className="add-user-container">
         <h3>Add New User</h3>
+        <input
+          type="text"
+          placeholder="Username"
+          value={newUser.username}  // Handle username input
+          onChange={(e) => setNewUser({ ...newUser, username: e.target.value })}
+        />
         <input
           type="text"
           placeholder="Name"
@@ -52,47 +112,89 @@ const UsersPage = () => {
           value={newUser.email}
           onChange={(e) => setNewUser({ ...newUser, email: e.target.value })}
         />
-        <input
-          type="text"
-          placeholder="Group"
+        <select
           value={newUser.group}
           onChange={(e) => setNewUser({ ...newUser, group: e.target.value })}
+        >
+          <option value="">Select Group</option>
+          {groups.map((group, index) => (
+            <option key={index} value={group}>
+              {group}
+            </option>
+          ))}
+        </select>
+        <input
+          type="password"
+          placeholder="Password"
+          value={newUser.password}
+          onChange={(e) => setNewUser({ ...newUser, password: e.target.value })}
         />
-        <button className="btn add-btn" onClick={handleAddUser}>Add User</button>
+        <PasswordStrengthBar password={newUser.password} />
+        <input
+          type="password"
+          placeholder="Confirm Password"
+          value={newUser.confirmPassword}
+          onChange={(e) =>
+            setNewUser({ ...newUser, confirmPassword: e.target.value })
+          }
+        />
+        <button className="btn add-btn" onClick={handleAddUser}>
+          Add User
+        </button>
       </div>
 
-      {/* User List */}
       <ul className="user-list">
         {users.map((user) => (
           <li key={user.id} className="user-item">
             {editingUser && editingUser.id === user.id ? (
               <>
-                {/* Editing User Form */}
                 <input
                   type="text"
                   value={editingUser.name}
-                  onChange={(e) => setEditingUser({ ...editingUser, name: e.target.value })}
+                  onChange={(e) =>
+                    setEditingUser({ ...editingUser, name: e.target.value })
+                  }
                 />
                 <input
                   type="email"
                   value={editingUser.email}
-                  onChange={(e) => setEditingUser({ ...editingUser, email: e.target.value })}
+                  onChange={(e) =>
+                    setEditingUser({ ...editingUser, email: e.target.value })
+                  }
                 />
-                <input
-                  type="text"
+                <select
                   value={editingUser.group}
-                  onChange={(e) => setEditingUser({ ...editingUser, group: e.target.value })}
-                />
-                <button className="btn update-btn" onClick={handleUpdateUser}>Update</button>
+                  onChange={(e) =>
+                    setEditingUser({ ...editingUser, group: e.target.value })
+                  }
+                >
+                  {groups.map((group, index) => (
+                    <option key={index} value={group}>
+                      {group}
+                    </option>
+                  ))}
+                </select>
+                <button className="btn update-btn" onClick={handleUpdateUser}>
+                  Update
+                </button>
               </>
             ) : (
               <>
-                {/* Display User Info */}
                 <span className="user-info">
-                  {user.name} - {user.email} - Group: {user.group}
+                  {user.username} - {user.name} - {user.email} - Group: {user.group}
                 </span>
-                <button className="btn edit-btn" onClick={() => handleEditUser(user)}>Edit</button>
-                <button className="btn delete-btn" onClick={() => handleDeleteUser(user.id)}>Delete</button>
+                <button
+                  className="btn edit-btn"
+                  onClick={() => handleEditUser(user)}
+                >
+                  Edit
+                </button>
+                <button
+                  className="btn delete-btn"
+                  onClick={() => handleDeleteUser(user.id)}
+                >
+                  Delete
+                </button>
               </>
             )}
           </li>
